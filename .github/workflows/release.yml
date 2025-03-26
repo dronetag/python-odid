@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/get-version.yml
 
   release-python:
-    name: Generate proto classes
+    name: Release python
     runs-on: ubuntu-latest
     needs: ['get-version']
     steps:
@@ -41,7 +41,7 @@ jobs:
 
 
   release-git:
-    name: Release new version to git and github
+    name: Release git
     if: needs.get-version.outputs.existed == 'false'
     runs-on: ubuntu-latest
     needs: [get-version, release-python]
