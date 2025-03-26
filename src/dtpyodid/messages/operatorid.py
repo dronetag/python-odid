@@ -1,4 +1,4 @@
-from ..message import Message, MAX_ID_BYTE_SIZE
+from .base import Message, MAX_ID_BYTE_SIZE
 from . import utils
 
 OperatorID_Type = {"CAA": 0}

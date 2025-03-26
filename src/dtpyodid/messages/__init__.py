@@ -5,7 +5,6 @@ from .basicid import BasicID
 from .location import Location
 from .messagepack import MessagePack
 from .operatorid import OperatorID
-from .parser import parse
 
 
 __all__ = [
@@ -16,5 +15,4 @@ __all__ = [
     "Location",
     "MessagePack",
     "OperatorID",
-    "parse",
 ]

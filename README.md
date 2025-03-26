@@ -1,7 +1,20 @@
-# RemoteID Transceiver
-This repository provides a micropython library for encoding and decoding Open Drone ID messages, as the format is defined in the ASTM F3411 Remote ID and the ASD-STAN prEN 4709-002 Direct Remote ID specifications.
+# OpenDroneID parser
 
-## Development Setup
-1. Clone the newest [micropython-stubs](https://github.com/Josverl/micropython-stubs)
-2. Create a symbolic link names `stubs` to the `stubs/` directory of `Josverl/micropython-stubs`. See [here](https://micropython-stubs.readthedocs.io/en/latest/40_symlink.html#create-symbolic-link) for help.
-3. Use VSCode with PyMakr extension
+Library for encoding and decoding Open Drone ID messages, as the format is defined in the ASTM F3411 Remote ID and the ASD-STAN prEN 4709-002 Direct Remote ID specifications.
+
+## Installation
+```sh
+pip install firmware-pyodid
+```
+
+## Usage
+
+```python
+import dtpyodid
+import json
+
+message = dtpyodid.parse(data)
+print(json.dumps(message))
+```
+
+## Development

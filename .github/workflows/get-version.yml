@@ -1,0 +1,58 @@
+name: 'What is the next version?'
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      existed:
+        description: "String true|false describing previous existence of the version"
+        value: ${{ jobs.get-version.outputs.existed }}
+      version:
+        description: "New released version in form of X.Y.Z"
+        value: ${{ jobs.get-version.outputs.version }}
+      prerelease:
+        description: "String true|false whether the version is a pre-release"
+        value: ${{ jobs.get-version.outputs.prerelease }}
+      changelog:
+        description: "Changelog string in mardown format"
+        value: ${{ jobs.get-version.outputs.changelog }}
+
+jobs:
+
+  get-version:
+    name: Get next version
+    runs-on: ubuntu-latest
+    outputs:
+      existed: ${{ steps.semantic.outputs.existed }}
+      version: ${{ steps.semantic.outputs.version }}
+      prerelease: ${{ steps.semantic.outputs.prerelease }}
+      changelog: ${{ steps.semantic.outputs.changelog }}
+    steps:
+      - name: Checkout repository (full-depth)
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # Required to determine the version
+      - name: Semantic Release
+        uses: dronetag/actions/semantic-release@main
+        id: semantic # need an `id` for output variables
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  print-version:
+    name: Version ${{ needs.get-version.outputs.version }}
+    runs-on: ubuntu-latest
+    needs: [get-version]
+    steps:
+    - name: Version
+      run: |
+        echo '${{ needs.get-version.outputs.version }}'
+
+  print-changelog:
+    name: Changelog
+    runs-on: ubuntu-latest
+    needs: [get-version]
+    env:
+      CHANGELOG: ${{ needs.get-version.outputs.changelog }}
+    steps:
+    - name: Changelog
+      run: |
+        printf '%s\n' "$CHANGELOG"

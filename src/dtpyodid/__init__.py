@@ -1,6 +1,6 @@
-from .message import Message
+from .parser import parse
 
-from .messages import parse
+from .messages.base import Message
 from .messages.auth import Auth
 from .messages.system import System
 from .messages.selfid import SelfID

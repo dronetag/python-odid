@@ -1,6 +1,6 @@
 from typing import ClassVar
-from ..message import Message, MAX_MESSAGE_SIZE, MAX_MESSAGES_IN_PACK
-from . import parser
+from .base import Message, MAX_MESSAGE_SIZE, MAX_MESSAGES_IN_PACK
+from .. import parser
 
 
 class MessagePack(Message):

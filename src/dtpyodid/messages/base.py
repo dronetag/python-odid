@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 LAT_LONG_MULTIPLIER = 1e-7
 SPEED_VERTICAL_MULTIPLIER = 0.5

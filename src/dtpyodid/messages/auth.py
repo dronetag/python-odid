@@ -1,12 +1,12 @@
 from typing import ClassVar
-from ..message import (
+from .base import (
     Message,
     MAX_AUTH_DATA,
     MAX_AUTH_DATA_PAGES,
     MAX_AUTH_PAGE_NON_ZERO_SIZE,
     MAX_AUTH_PAGE_ZERO_SIZE,
 )
-import ubinascii
+import binascii
 import struct
 
 
@@ -72,7 +72,7 @@ class Auth(Message):
             for i in range(offset, offset + amount):
                 pack.auth_data[i] = data[cnt]
                 cnt += 1
-            pack.auth_data_str = ubinascii.hexlify(pack.auth_data)
+            pack.auth_data_str = binascii.hexlify(pack.auth_data)
         return pack
 
     def pack(self):

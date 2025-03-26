@@ -1,4 +1,4 @@
-from ..message import Message, LAT_LONG_MULTIPLIER
+from .base import Message, LAT_LONG_MULTIPLIER
 from . import utils
 import struct
 

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools >= 68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firmware-pyodid"
+version = "99.99"
+requires-python = ">=3.10"
+description = "OpenDroneID parser"
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["F", "E", "I"]  # F: pyflakes, E: pycodestyle, I: isort
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

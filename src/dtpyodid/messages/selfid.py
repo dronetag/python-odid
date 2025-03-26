@@ -1,4 +1,4 @@
-from ..message import Message, MAX_STRING_BYTE_SIZE
+from .base import Message, MAX_STRING_BYTE_SIZE
 from . import utils
 
 SelfID_Description_Type = {"TEXT": 0, "EMERGENCY": 1, "EXTENDED_STATUS": 2}

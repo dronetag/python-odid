@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  # Allow only manual releases because people are making changes
+  # to other files that .proto with fix: and other release words
+  # push:
+  #   branches: [master]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.10"
+
+jobs:
+  get-version:
+    uses: ./.github/workflows/get-version.yml
+
+  release-python:
+    name: Generate proto classes
+    runs-on: ubuntu-latest
+    needs: ['get-version']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: dronetag/actions/build-python@main
+        with:
+          version: ${{ needs.get-version.outputs.version }}
+
+      - name: Release the project
+        uses: dronetag/actions/release-python@main
+        with:
+          pypi-name: dronetag
+          pypi-host: ${{ secrets.PRIV_PIP_HOST }}
+          pypi-user: ${{ secrets.PRIV_PIP_USER }}
+          pypi-pass: ${{ secrets.PRIV_PIP_PASSWORD }}
+
+
+  release-git:
+    name: Release new version to git and github
+    if: needs.get-version.outputs.existed == 'false'
+    runs-on: ubuntu-latest
+    needs: [get-version, release-python]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create tag and release
+        uses: dronetag/actions/release@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ needs.get-version.outputs.version }}
+          changelog: ${{ needs.get-version.outputs.changelog }}
+          tag-only: true
