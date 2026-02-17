@@ -2,14 +2,13 @@ import logging
 from typing import Type
 
 from .messages.auth import Auth
-from .messages.base import Message, RID_VERSION
-from .messages.system import System
-from .messages.selfid import SelfID
+from .messages.base import RID_VERSION, Message
 from .messages.basicid import BasicID
 from .messages.location import Location
 from .messages.messagepack import MessagePack
 from .messages.operatorid import OperatorID
-
+from .messages.selfid import SelfID
+from .messages.system import System
 
 TYPES: dict[int, Type[Message]] = {
     BasicID.rid: BasicID,
