@@ -79,7 +79,7 @@ class System(Message):
 
         return pack
 
-    def pack(self):
+    def _pack(self):
         raw_latitude = int(self.latitude / LAT_LONG_MULTIPLIER)
         raw_longitude = int(self.longitude / LAT_LONG_MULTIPLIER)
         raw_area_radius = int(self.area_radius / 10)

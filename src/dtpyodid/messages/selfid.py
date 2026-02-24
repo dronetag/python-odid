@@ -20,7 +20,7 @@ class SelfID(Message):
         self.operation_description = str(data[1:25], "ascii")
         return data[25:]
 
-    def pack(self):
+    def _pack(self):
         desc_type = (self.description_type & 0xFF).to_bytes(1, "little")
 
         desc = bytes(self.operation_description, "ascii")

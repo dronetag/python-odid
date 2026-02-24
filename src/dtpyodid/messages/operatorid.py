@@ -18,7 +18,7 @@ class OperatorID(Message):
         pack.operator_id = str(data[1:], "ascii")
         return pack
 
-    def pack(self):
+    def _pack(self):
         op_type = (self.operator_type & 0xFF).to_bytes(1, "little")
 
         op_id = bytes(self.operator_id, "ascii")

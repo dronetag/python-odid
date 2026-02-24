@@ -1,3 +1,4 @@
+import struct
 from abc import ABC
 from typing import ClassVar
 
@@ -28,5 +29,9 @@ class Message(ABC):
         raise NotImplementedError()
 
     def pack(self) -> bytes:
+        """Encode itself into a byte stream"""
+        return struct.pack("B", self.rid << 4 | RID_VERSION) + self._pack()
+
+    def _pack(self) -> bytes:
         """Encode itself into a byte stream"""
         raise NotImplementedError()

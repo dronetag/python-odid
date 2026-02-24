@@ -92,7 +92,7 @@ class Location(Message):
 
         return pack
 
-    def pack(self):
+    def _pack(self):
         if self.direction > 179:
             self.ew_direction = 1
         else:

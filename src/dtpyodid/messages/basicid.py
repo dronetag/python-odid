@@ -46,7 +46,7 @@ class BasicID(Message):
         pack.uas_id = str(data[1:], "ascii")
         return pack
 
-    def pack(self):
+    def _pack(self):
         id_type_nibble = (self.id_type << 4) & 0xF0
         ua_type_nibble = self.ua_type & 0x0F
         basic_types = (id_type_nibble | ua_type_nibble).to_bytes(1, "little")

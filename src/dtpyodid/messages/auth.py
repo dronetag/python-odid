@@ -1,13 +1,14 @@
+import binascii
+import struct
 from typing import ClassVar
+
 from .base import (
-    Message,
     MAX_AUTH_DATA,
     MAX_AUTH_DATA_PAGES,
     MAX_AUTH_PAGE_NON_ZERO_SIZE,
     MAX_AUTH_PAGE_ZERO_SIZE,
+    Message,
 )
-import binascii
-import struct
 
 
 class Auth(Message):
@@ -75,7 +76,7 @@ class Auth(Message):
             pack.auth_data_str = binascii.hexlify(pack.auth_data)
         return pack
 
-    def pack(self):
+    def _pack(self):
         pass
 
     def __str__(self) -> str:
