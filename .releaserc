@@ -1,7 +1,8 @@
 {
 	"branches": [
 		"dronetag",
-		{"name": "devel", "prerelease": "dev"}
+		{"name": "devel", "prerelease": "dev"},
+		{"name": "**/DH-+([0-9])-*", "prerelease": "rc${name.replace(/.*DH-([0-9]+).*/, '$1')}.dev"}
 	],
 	"plugins": [
 		[
