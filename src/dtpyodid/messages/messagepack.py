@@ -1,22 +1,34 @@
 import io
 import struct
-from typing import ClassVar
+from dataclasses import dataclass, field
+from typing import ClassVar, Type
 
-from .. import parser
-from .base import MAX_MESSAGE_SIZE, MAX_MESSAGES_IN_PACK, Message
+from dtpyodid.message import MAX_MESSAGE_SIZE, MAX_MESSAGES_IN_PACK, Message
 
+from .auth import Auth
+from .basicid import BasicID
+from .location import Location
+from .operatorid import OperatorID
+from .selfid import SelfID
+from .system import System
 
+MESSAGES: list[Type[Message]] = [
+    Auth,
+    BasicID,
+    Location,
+    OperatorID,
+    SelfID,
+    System,
+]
+
+@dataclass
 class MessagePack(Message):
     rid: ClassVar[int] = 0xF
 
-    message_size: int
-    messages: list[Message]
+    message_size: int = 25
+    messages: list[Message] = field(default_factory=list)
 
-    def __init__(self, message_size: int = 25) -> None:
-        self.message_size = message_size
-        self.messages = []
-
-    def parse(self, data: bytes) -> bytes:
+    def _parse(self, data: bytes) -> bytes:
         self.message_size = data[0]
         messages_in_pack = data[1]
 
@@ -29,7 +41,10 @@ class MessagePack(Message):
 
         data = data[2:]
         for _ in range(messages_in_pack):
-            self.messages.append(parser.parse(data[: self.message_size]))
+            for MESSAGE in MESSAGES:
+                if message := MESSAGE.parse(data[: self.message_size]):
+                    self.messages.append(message)
+                    break
             data = data[self.message_size :]
         return data
 
@@ -45,13 +60,9 @@ class MessagePack(Message):
         if max_message_size > MAX_MESSAGE_SIZE:
             raise ValueError(
                 f"One message in pack is longer ({max_message_size}) than {MAX_MESSAGE_SIZE}")
-        buffer.write(struct.pack("BB", max_message_size, len(messages)))
+        buffer.write(struct.pack("BB", MAX_MESSAGE_SIZE, len(messages)))
         for message in messages:
             msg_size = buffer.write(message)
-            if msg_size < max_message_size:
-                buffer.write(b"\0" * max_message_size - msg_size)
+            if msg_size < MAX_MESSAGE_SIZE:
+                buffer.write(b"\0" * MAX_MESSAGE_SIZE - msg_size)
         return buffer.getvalue()
-
-
-    def __repr__(self) -> str:
-        return f"MessagePack(message_size={self.message_size} messages_in_pack={len(self.messages)})"

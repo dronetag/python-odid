@@ -15,4 +15,10 @@
         "stubs/micropython-v1_19_1-frozen/esp32/GENERIC",
         "stubs/micropython-v1_19_1-esp32-merged"
     ],
+    "cSpell.words": [
+        "baro",
+        "calcsize",
+        "hori",
+        "mult"
+    ],
 }

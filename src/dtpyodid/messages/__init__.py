@@ -1,18 +1,17 @@
 from .auth import Auth
-from .system import System
-from .selfid import SelfID
 from .basicid import BasicID
 from .location import Location
 from .messagepack import MessagePack
 from .operatorid import OperatorID
-
+from .selfid import SelfID
+from .system import System
 
 __all__ = [
     "Auth",
-    "System",
-    "SelfID",
     "BasicID",
     "Location",
     "MessagePack",
     "OperatorID",
+    "SelfID",
+    "System",
 ]

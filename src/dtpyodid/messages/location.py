@@ -1,55 +1,63 @@
+import enum
 import struct
+from dataclasses import dataclass
+from typing import ClassVar
 
-from . import utils
-from .base import LAT_LONG_MULTIPLIER, SPEED_VERTICAL_MULTIPLIER, Message
-
-Location_Status = {
-    "NONE": 0,
-    "ON_GROUND": 1,
-    "IN_AIR": 2,
-    "EMERGENCY": 3,
-}
-
-Location_Height_Type = {"ABOVE_START": 0, "AGL": 1}
+from dtpyodid.message import LAT_LONG_MULTIPLIER, SPEED_VERTICAL_MULTIPLIER, Message
 
 
+class Location_Status(enum.IntEnum):
+    NONE = 0
+    ON_GROUND = 1
+    IN_AIR = 2
+    EMERGENCY = 3
+
+
+class Location_Height_Type(enum.IntEnum):
+    ABOVE_START = 0
+    AGL = 1
+
+
+def is_full_timestamp(ts: float) -> bool:
+    return ts > 2**16
+
+
+@dataclass
 class Location(Message):
-    rid: int = 0x1
+    rid: ClassVar[int] = 0x1
 
-    def __init__(self) -> None:
-        # See DIN EN 4709-002 for specific values i.e. for the accuracy
-        self.status = Location_Status["NONE"]
-        self.height_type = Location_Height_Type["AGL"]
-        self.ew_direction = 0
-        self.speed_mult = 0
-        self.direction = 0
-        self.speed_hori = 0
-        self.speed_vert = 0
-        self.latitude = 51.549999
-        self.longitude = 7.216667
-        self.altitude_pressure = 10.5
-        self.altitude_geodetic = 10.5
-        self.height = 10.5
-        self.timestamp = 0
-        self.accuracy_time = 0
-        self.accuracy_horizontal = 0
-        self.accuracy_vertical = 0
-        self.accuracy_baro = 0
-        self.accuracy_speed = 0
+    # See DIN EN 4709-002 for specific values i.e. for the accuracy
+    latitude: float
+    longitude: float
+    height: float
 
-    @staticmethod
-    def parse(data) -> "Location":
-        pack = Location()
+    status: Location_Status = Location_Status.NONE
+    height_type: Location_Height_Type = Location_Height_Type.AGL
+    ew_direction: int = 0
+    speed_mult: int = 0
+    direction: int = 0
+    speed_horizontal: int = 0
+    speed_vertical: int = 0
+    altitude_baro: float = -1000
+    altitude_geo: float = -1000
+    timestamp: int = 0
+    accuracy_time: int = 0
+    accuracy_horizontal: int = 0
+    accuracy_vertical: int = 0
+    accuracy_baro: int = 0
+    accuracy_speed: int = 0
 
+    @classmethod
+    def _parse(cls, data: bytes) -> "Location":
         b = data[0]
-        pack.status = (b & 0xF0) >> 4
-        pack.height_type = (b & 0x04) >> 2
-        pack.ew_direction = (b & 0x02) >> 1
-        pack.speed_mult = b & 0x01
+        status = (b & 0xF0) >> 4
+        height_type = (b & 0x04) >> 2
+        ew_direction = (b & 0x02) >> 1
+        speed_mult = b & 0x01
 
-        pack.direction = data[1]
-        pack.speed_hori = data[2]
-        pack.speed_vert = data[3]
+        direction = data[1]
+        speed_hori = data[2]
+        speed_vert = data[3]
 
         data = data[4:]
 
@@ -58,12 +66,7 @@ class Location(Message):
         lat, lng, altPres, altGeo, height = struct.unpack(next_format, data[:next_size])
         data = data[next_size:]
 
-        pack.latitude = lat
-        pack.longitude = lng
-
-        pack.altitude_pressure = altPres
-        pack.altitude_geodetic = altGeo
-        pack.height = height
+        height = height
 
         next_format = "<BBHB"
         next_size = struct.calcsize(next_format)
@@ -72,25 +75,28 @@ class Location(Message):
         )
         data = data[next_size:]
 
-        pack.accuracy_horizontal = hori_vert_acc & 0x0F
-        pack.accuracy_vertical = (hori_vert_acc & 0xF0) >> 4
-        pack.accuracy_baro = (speed_baro_acc & 0xF0) >> 4
-        pack.accuracy_speed = speed_baro_acc & 0x0F
-        pack.timestamp = ts
-        pack.accuracy_time = time_acc
+        return cls(
+            status = status,
+            height_type = height_type,
+            ew_direction = ew_direction,
+            speed_mult = speed_mult,
+            speed_hori = calc_speed(speed_hori, speed_mult),
+            speed_vert = SPEED_VERTICAL_MULTIPLIER * speed_vert,
+            direction = calc_direction(direction, ew_direction),
 
-        # Do some calculation to convert raw values
-        pack.direction = Location.calc_direction(pack.direction, pack.ew_direction)
-        pack.speed_hori = Location.calc_speed(pack.speed_hori, pack.speed_mult)
-        pack.speed_vert = SPEED_VERTICAL_MULTIPLIER * pack.speed_vert
-        pack.latitude = LAT_LONG_MULTIPLIER * pack.latitude
-        pack.longitude = LAT_LONG_MULTIPLIER * pack.longitude
-        pack.altitude_pressure = Location.calc_altitude(pack.altitude_pressure)
-        pack.altitude_geodetic = Location.calc_altitude(pack.altitude_geodetic)
-        pack.height = Location.calc_altitude(pack.height)
-        pack.accuracy_time = pack.accuracy_time * 0.1
+            latitude=LAT_LONG_MULTIPLIER * lat,
+            longitude=LAT_LONG_MULTIPLIER * lng,
+            altitude_baro=calc_altitude(altPres),
+            altitude_geo=calc_altitude(altGeo),
+            height=calc_altitude(height),
 
-        return pack
+            accuracy_horizontal=hori_vert_acc & 0x0F,
+            accuracy_vertical=(hori_vert_acc & 0xF0) >> 4,
+            accuracy_baro=(speed_baro_acc & 0xF0) >> 4,
+            accuracy_speed=speed_baro_acc & 0x0F,
+            timestamp=ts,
+            accuracy_time = time_acc * 0.1,
+        )
 
     def _pack(self):
         if self.direction > 179:
@@ -98,20 +104,20 @@ class Location(Message):
         else:
             self.ew_direction = 0
 
-        if self.speed_hori <= 255 * 0.25:
+        if self.speed_horizontal <= 255 * 0.25:
             self.speed_mult = 0
         else:
             self.speed_mult = 1
 
-        raw_speed_vert = int(self.speed_vert / SPEED_VERTICAL_MULTIPLIER)
+        raw_speed_vert = int(self.speed_vertical / SPEED_VERTICAL_MULTIPLIER)
         raw_latitude = int(self.latitude / LAT_LONG_MULTIPLIER)
         raw_longitude = int(self.longitude / LAT_LONG_MULTIPLIER)
         raw_accuracy_time = int(self.accuracy_time / 0.1)
-        raw_direction = Location.calc_direction_raw(self.direction, self.ew_direction)
-        raw_speed_hori = Location.calc_speed_raw(self.speed_hori, self.speed_mult)
-        raw_altitude_pressure = Location.calc_altitude_raw(self.altitude_pressure)
-        raw_altitude_geodetic = Location.calc_altitude_raw(self.altitude_geodetic)
-        raw_height = Location.calc_altitude_raw(self.height)
+        raw_direction = calc_direction_raw(self.direction, self.ew_direction)
+        raw_speed_hori = calc_speed_raw(self.speed_horizontal, self.speed_mult)
+        raw_altitude_baro = calc_altitude_raw(self.altitude_baro)
+        raw_altitude_geo = calc_altitude_raw(self.altitude_geo)
+        raw_height = calc_altitude_raw(self.height)
 
         a = (self.status << 4) & 0xF0
         b = (self.height_type << 2) & 0x04
@@ -119,18 +125,18 @@ class Location(Message):
         d = self.speed_mult & 0x01
         first = ((a | b | c | d) & 0xFF).to_bytes(1, "little")
 
-        pack1 = (
+        pack1 = ( # 4 bytes
             first
             + (raw_direction & 0xFF).to_bytes(1, "little")
             + (raw_speed_hori & 0xFF).to_bytes(1, "little")
             + (raw_speed_vert & 0xFF).to_bytes(1, "little")
         )
-        pack2 = struct.pack(
+        pack2 = struct.pack(  # 2*4 + 3*2 = 14 bytes
             "<iihhh",
             raw_latitude,
             raw_longitude,
-            raw_altitude_pressure,
-            raw_altitude_geodetic,
+            raw_altitude_baro,
+            raw_altitude_geo,
             raw_height,
         )
 
@@ -140,42 +146,39 @@ class Location(Message):
         accuracy_baro = (self.accuracy_baro << 4) & 0xF0
         accuracy_speed = self.accuracy_speed & 0x0F
         f = accuracy_baro | accuracy_speed
-
-        pack3 = struct.pack("<BBHB", e, f, self.timestamp, raw_accuracy_time & 0x07)
+        ts = self.timestamp
+        if is_full_timestamp(self.timestamp):
+            ts = int(self.timestamp * 10) % 36000
+        elif isinstance(self.timestamp, float):
+            ts = int(self.timestamp * 10)
+        pack3 = struct.pack(  # 2+2+1 = 5 bytes
+            "<BBHB", e, f, ts, raw_accuracy_time & 0x07)
 
         return pack1 + pack2 + pack3 + (b"\0" * 1)
 
-    @staticmethod
-    def calc_speed(value, mult) -> float:
-        if mult == 0:
-            return value * 0.25
-        return (value * 0.75) + (255 * 0.25)
 
-    @staticmethod
-    def calc_speed_raw(value, mult) -> float:
-        if mult == 0:
-            return int(value / 0.25)
-        return int((value - (255 * 0.25)) / 0.75)
+def calc_speed(value, mult) -> float:
+    if mult == 0:
+        return value * 0.25
+    return (value * 0.75) + (255 * 0.25)
 
-    @staticmethod
-    def calc_direction(value, ew) -> float:
-        if ew == 0:
-            return value
-        return value + 180
+def calc_speed_raw(value, mult) -> float:
+    if mult == 0:
+        return int(value / 0.25)
+    return int((value - (255 * 0.25)) / 0.75)
 
-    @staticmethod
-    def calc_direction_raw(value, ew) -> float:
-        if ew == 0:
-            return value
-        return value - 180
+def calc_direction(value, ew) -> float:
+    if ew == 0:
+        return value
+    return value + 180
 
-    @staticmethod
-    def calc_altitude(value) -> float:
-        return value / 2 - 1000
+def calc_direction_raw(value, ew) -> int:
+    if ew == 0:
+        return value
+    return value - 180
 
-    @staticmethod
-    def calc_altitude_raw(value) -> float:
-        return int((value + 1000) * 2)
+def calc_altitude(value) -> float:
+    return value / 2 - 1000
 
-    def __str__(self) -> str:
-        return f"RemoteID_Location: latitude={self.latitude} longitude={self.longitude} status={utils.get_key_by_value(Location_Status, self.status)} height={self.height} height_type={utils.get_key_by_value(Location_Height_Type, self.height_type)} altitude_pressure={self.altitude_pressure} altitude_geodetic={self.altitude_geodetic} direction={self.direction} speed_hori={self.speed_hori} speed_vert={self.speed_vert} speed_mult={self.speed_mult} ew_direction={self.ew_direction} timestamp={self.timestamp} accuracy_time={self.accuracy_time} accuracy_horizontal={self.accuracy_horizontal} accuracy_vertical={self.accuracy_vertical} accuracy_baro={self.accuracy_baro} accuracy_speed={self.accuracy_speed}"
+def calc_altitude_raw(value) -> float:
+    return int((value + 1000) * 2)

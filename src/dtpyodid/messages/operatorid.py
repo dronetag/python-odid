@@ -1,7 +1,10 @@
-from .base import Message, MAX_ID_BYTE_SIZE
-from . import utils
+import enum
 
-OperatorID_Type = {"CAA": 0}
+from dtpyodid.message import MAX_ID_BYTE_SIZE, Message
+
+
+class OperatorID_Type(enum.IntEnum):
+    CAA = 0
 
 
 class OperatorID(Message):
@@ -12,7 +15,7 @@ class OperatorID(Message):
         self.operator_id = ""
 
     @staticmethod
-    def parse(data) -> "OperatorID":
+    def _parse(data) -> "OperatorID":
         pack = OperatorID()
         pack.operator_type = data[0]
         pack.operator_id = str(data[1:], "ascii")
@@ -26,5 +29,6 @@ class OperatorID(Message):
 
         return op_type + op_id + (b"\0" * 3)
 
-    def __str__(self) -> str:
-        return f'RemoteID_OperatorID: operator_type={utils.get_key_by_value(OperatorID_Type, self.operator_type)} operator_id="{self.operator_id}"'
+    def __repr__(self) -> str:
+        return f'RemoteID_OperatorID(operator_type={self.operator_type.name}, ' \
+               f'operator_id="{self.operator_id}")'

@@ -1,52 +1,54 @@
-from .base import Message, LAT_LONG_MULTIPLIER
-from . import utils
+import enum
 import struct
 
-System_Operator_Location_Type = {"TAKEOFF": 0, "LIVE_GNSS": 1, "FIXED": 2}
+from dtpyodid.message import LAT_LONG_MULTIPLIER, Message
 
-System_Classification_Type = {
-    "NONE": 0,
-    "EU": 1,
-}
 
-System_Category = {
-    "NONE": 0,
-    "OPEN": 1,
-    "SPECIFIC": 2,
-    "CERTIFIED": 3,
-}
+class System_Operator_Location_Type(enum.IntEnum):
+    TAKEOFF = 0
+    LIVE_GNSS = 1
+    FIXED = 2
 
-System_Class = {
-    "NONE": 0,
-    "CLASS_0": 1,
-    "CLASS_1": 2,
-    "CLASS_2": 3,
-    "CLASS_3": 4,
-    "CLASS_4": 5,
-    "CLASS_5": 6,
-    "CLASS_6": 7,
-}
+class System_Classification_Type(enum.IntEnum):
+    NONE = 0
+    EU = 1
+
+class System_Category(enum.IntEnum):
+    NONE = 0
+    OPEN = 1
+    SPECIFIC = 2
+    CERTIFIED = 3
+
+class System_Class(enum.IntEnum):
+    NONE = 0
+    CLASS_0 = 1
+    CLASS_1 = 2
+    CLASS_2 = 3
+    CLASS_3 = 4
+    CLASS_4 = 5
+    CLASS_5 = 6
+    CLASS_6 = 7
 
 
 class System(Message):
     rid: int = 0x4
 
     def __init__(self) -> None:
-        self.operator_location_type = System_Operator_Location_Type["TAKEOFF"]
-        self.classification_type = System_Classification_Type["NONE"]
+        self.operator_location_type = System_Operator_Location_Type.TAKEOFF
+        self.classification_type = System_Classification_Type.NONE
         self.latitude = 51.549999
         self.longitude = 7.216667
         self.area_count = 0
         self.area_radius = 0
         self.area_ceiling = 0
         self.area_floor = 0
-        self.category = System_Category["NONE"]
-        self.class_value = System_Class["NONE"]
+        self.category = System_Category.NONE
+        self.class_value = System_Class.NONE
         self.altitude_geodetic = 0
         self.system_timestamp = 0
 
     @staticmethod
-    def parse(data) -> "System":
+    def _parse(data) -> "System":
         pack = System()
 
         next_format = "<BiiHBHHBHI"
@@ -120,4 +122,16 @@ class System(Message):
         return int((value + 1000) * 2)
 
     def __str__(self) -> str:
-        return f"RemoteID_System: latitude={self.latitude} longitude={self.longitude} operator_location_type={utils.get_key_by_value(System_Operator_Location_Type, self.operator_location_type)} classification_type={utils.get_key_by_value(System_Classification_Type, self.classification_type)} area_count={self.area_count} area_radius={self.area_radius} area_ceiling={self.area_ceiling} area_floor={self.area_floor} category={utils.get_key_by_value(System_Category, self.category)} class_value={utils.get_key_by_value(System_Class, self.class_value)} altitude_geodetic={self.altitude_geodetic} system_timestamp={self.system_timestamp}"
+        return f"RemoteID_System(" \
+            f"latitude={self.latitude}, " \
+            f"longitude={self.longitude}, " \
+            f"operator_location_type={self.operator_location_type.name}, " \
+            f"classification_type={self.classification_type.name}, " \
+            f"area_count={self.area_count}, " \
+            f"area_radius={self.area_radius}, " \
+            f"area_ceiling={self.area_ceiling}, " \
+            f"area_floor={self.area_floor}, " \
+            f"category={self.category.name}, " \
+            f"class_value={self.class_value.name}, " \
+            f"altitude_geodetic={self.altitude_geodetic}, " \
+            f"system_timestamp={self.system_timestamp})"

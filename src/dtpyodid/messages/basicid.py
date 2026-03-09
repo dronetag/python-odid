@@ -1,49 +1,52 @@
-from .base import Message, MAX_ID_BYTE_SIZE
-from . import utils
+import enum
+from dataclasses import dataclass
+from typing import ClassVar
 
-BasicID_ID_Type = {
-    "NONE": 0,
-    "SERIAL_NUMBER": 1,
-    "CAA_REGISTRATION_ID": 2,
-    "UTM_ASSIGNED_UUID": 3,
-    "SPECIFIC_SESSION_ID": 4,
-}
-
-BasicID_UA_Type = {
-    "NONE": 0,
-    "AEROPLANE": 1,
-    "HELICOPTER_OR_MULTIROTOR": 2,
-    "GYROPLANE": 3,
-    "HYBRID_LIFT": 4,
-    "ORNITHOPTER": 5,
-    "GLIDER": 6,
-    "KITE": 7,
-    "FREE_BALLOON": 8,
-    "CAPTIVE_BALLOON": 9,
-    "AIRSHIP": 10,
-    "FREE_FALL_PARACHUTE": 11,
-    "ROCKET": 12,
-    "TETHERED_POWERED_AIRCRAFT": 13,
-    "GROUND_OBSTACLE": 14,
-    "OTHER": 15,
-}
+from dtpyodid.message import MAX_ID_BYTE_SIZE, Message
 
 
+class BasicID_ID_Type(enum.IntEnum):
+    NONE = 0
+    SERIAL_NUMBER = 1
+    CAA_REGISTRATION_ID = 2
+    UTM_ASSIGNED_UUID = 3
+    SPECIFIC_SESSION_ID = 4
+    ERROR = 0xf
+
+
+class BasicID_UA_Type(enum.IntEnum):
+    NONE = 0
+    AEROPLANE = 1
+    HELICOPTER_OR_MULTIROTOR = 2
+    GYROPLANE = 3
+    HYBRID_LIFT = 4
+    ORNITHOPTER = 5
+    GLIDER = 6
+    KITE = 7
+    FREE_BALLOON = 8
+    CAPTIVE_BALLOON = 9
+    AIRSHIP = 10
+    FREE_FALL_PARACHUTE = 11
+    ROCKET = 12
+    TETHERED_POWERED_AIRCRAFT = 13
+    GROUND_OBSTACLE = 14
+    OTHER = 15
+
+
+@dataclass
 class BasicID(Message):
-    rid: int = 0x0
-
-    def __init__(self) -> None:
-        self.id_type = 0xF
-        self.ua_type = 0xF
-        self.uas_id = ""
+    rid: ClassVar[int] = 0x0
+    id_type: BasicID_ID_Type
+    ua_type: BasicID_UA_Type = BasicID_UA_Type.OTHER
+    uas_id: str = ""
 
     @classmethod
-    def parse(cls, data: bytes) -> "BasicID":
-        pack = cls()
+    def _parse(cls, data: bytes) -> "BasicID":
         basic_types = data[0]
-        pack.id_type = (basic_types & 0xF0) >> 4
-        pack.ua_type = basic_types & 0x0F
-        pack.uas_id = str(data[1:], "ascii")
+        pack = cls()
+        pack.id_type = (basic_types & 0xF0) >> 4,
+        pack.ua_type = basic_types & 0x0F,
+        pack.uas_id = str(data[1:], "ascii").strip("\0"),
         return pack
 
     def _pack(self):
@@ -56,5 +59,6 @@ class BasicID(Message):
 
         return basic_types + uas_id + (b"\0" * 3)
 
-    def __str__(self) -> str:
-        return f'RemoteID_BasicID: id_type={utils.get_key_by_value(BasicID_ID_Type, self.id_type)} ua_type={utils.get_key_by_value(BasicID_UA_Type, self.ua_type)} uas_id="{self.uas_id}"'
+    # def __repr__(self) -> str:
+    #     return f'RemoteID_BasicID(id_type={self.id_type.name}, ' \
+    #            f'ua_type={self.ua_type.name}, uas_id="{self.uas_id}")'

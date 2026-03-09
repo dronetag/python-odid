@@ -2,7 +2,7 @@ import binascii
 import struct
 from typing import ClassVar
 
-from .base import (
+from dtpyodid.message import (
     MAX_AUTH_DATA,
     MAX_AUTH_DATA_PAGES,
     MAX_AUTH_PAGE_NON_ZERO_SIZE,
@@ -31,7 +31,7 @@ class Auth(Message):
         self.auth_data = auth_data
 
     @staticmethod
-    def parse(data) -> "Auth":
+    def _parse(data) -> "Auth":
         pack = Auth(None, None, None, None, None, None)
         types = data[0]
         pack.auth_type = (types & 0xF0) >> 4
@@ -79,5 +79,10 @@ class Auth(Message):
     def _pack(self):
         pass
 
-    def __str__(self) -> str:
-        return f"RemoteID_Auth: auth_type={self.auth_type} auth_data_page={self.auth_data_page} auth_last_page_index={self.auth_last_page_index} auth_length={self.auth_length} auth_timestamp={self.auth_timestamp} auth_data={self.auth_data}"
+    def __repr__(self) -> str:
+        return f"RemoteID_Auth(auth_type={self.auth_type}, " \
+               f"auth_data_page={self.auth_data_page}, " \
+               f"auth_last_page_index={self.auth_last_page_index}, " \
+               f"auth_length={self.auth_length}, " \
+               f"auth_timestamp={self.auth_timestamp}, " \
+               f"auth_data={self.auth_data})"
