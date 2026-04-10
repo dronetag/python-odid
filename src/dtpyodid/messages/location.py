@@ -76,12 +76,12 @@ class Location(Message):
         data = data[next_size:]
 
         return cls(
-            status = status,
-            height_type = height_type,
+            status = Location_Status(status),
+            height_type = Location_Height_Type(height_type),
             ew_direction = ew_direction,
             speed_mult = speed_mult,
-            speed_hori = calc_speed(speed_hori, speed_mult),
-            speed_vert = SPEED_VERTICAL_MULTIPLIER * speed_vert,
+            speed_horizontal = calc_speed(speed_hori, speed_mult),
+            speed_vertical = SPEED_VERTICAL_MULTIPLIER * speed_vert,
             direction = calc_direction(direction, ew_direction),
 
             latitude=LAT_LONG_MULTIPLIER * lat,

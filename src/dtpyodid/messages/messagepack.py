@@ -25,16 +25,18 @@ MESSAGES: list[Type[Message]] = [
 class MessagePack(Message):
     rid: ClassVar[int] = 0xF
 
-    message_size: int = 25
     messages: list[Message] = field(default_factory=list)
 
-    def _parse(self, data: bytes) -> bytes:
-        self.message_size = data[0]
+    @classmethod
+    def _parse(cls, data: bytes) -> bytes:
+        message_size = data[0]
         messages_in_pack = data[1]
 
-        if self.message_size > MAX_MESSAGE_SIZE:
+        msg_pack = cls()
+
+        if message_size > MAX_MESSAGE_SIZE:
             raise ValueError(
-                f"Invalid declared message size in MessagePack {self.message_size}"
+                f"Invalid declared message size in MessagePack {message_size}"
             )
         if messages_in_pack <= 0 or messages_in_pack > MAX_MESSAGES_IN_PACK:
             raise ValueError("")
@@ -42,11 +44,12 @@ class MessagePack(Message):
         data = data[2:]
         for _ in range(messages_in_pack):
             for MESSAGE in MESSAGES:
-                if message := MESSAGE.parse(data[: self.message_size]):
-                    self.messages.append(message)
+                if message := MESSAGE.parse(data[: message_size]):
+                    msg_pack.messages.append(message)
                     break
-            data = data[self.message_size :]
-        return data
+            data = data[message_size :]
+
+        return msg_pack
 
     def _pack(self) -> bytes:
         buffer = io.BytesIO()

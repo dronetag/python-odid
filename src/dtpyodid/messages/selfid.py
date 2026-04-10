@@ -22,7 +22,7 @@ class SelfID(Message):
     @classmethod
     def _parse(data: bytes) -> "SelfID":
         return SelfID(
-            desc_type=data[0],
+            desc_type=Type(data[0]),
             desc=str(data[1:25], "ascii"),
         )
 
