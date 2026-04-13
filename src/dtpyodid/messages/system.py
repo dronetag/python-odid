@@ -58,16 +58,16 @@ class System(Message):
         )
         data = data[next_size:]
 
-        pack.operator_location_type = types & 0x03
-        pack.classification_type = (types & 0x1C) >> 2
+        pack.operator_location_type = System_Operator_Location_Type(types & 0x03)
+        pack.classification_type = System_Classification_Type((types & 0x1C) >> 2)
         pack.latitude = lat
         pack.longitude = lng
         pack.area_count = a_count
         pack.area_radius = a_radius
         pack.area_ceiling = a_ceil
         pack.area_floor = a_floor
-        pack.category = (cat & 0xF0) >> 4
-        pack.class_value = cat & 0x0F
+        pack.category = System_Category((cat & 0xF0) >> 4)
+        pack.class_value = System_Class(cat & 0x0F)
         pack.altitude_geodetic = alt_geo
         pack.system_timestamp = ts
 
@@ -121,7 +121,7 @@ class System(Message):
     def calc_altitude_raw(value) -> float:
         return int((value + 1000) * 2)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"RemoteID_System(" \
             f"latitude={self.latitude}, " \
             f"longitude={self.longitude}, " \

@@ -17,7 +17,7 @@ class OperatorID(Message):
     @staticmethod
     def _parse(data) -> "OperatorID":
         pack = OperatorID()
-        pack.operator_type = data[0]
+        pack.operator_type = OperatorID_Type(data[0])
         pack.operator_id = str(data[1:], "ascii")
         return pack
 

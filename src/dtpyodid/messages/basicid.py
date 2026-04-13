@@ -36,7 +36,7 @@ class BasicID_UA_Type(enum.IntEnum):
 @dataclass
 class BasicID(Message):
     rid: ClassVar[int] = 0x0
-    id_type: BasicID_ID_Type
+    id_type: BasicID_ID_Type = BasicID_ID_Type.NONE
     ua_type: BasicID_UA_Type = BasicID_UA_Type.OTHER
     uas_id: str = ""
 
@@ -44,9 +44,9 @@ class BasicID(Message):
     def _parse(cls, data: bytes) -> "BasicID":
         basic_types = data[0]
         pack = cls()
-        pack.id_type = (basic_types & 0xF0) >> 4,
-        pack.ua_type = basic_types & 0x0F,
-        pack.uas_id = str(data[1:], "ascii").strip("\0"),
+        pack.id_type = BasicID_ID_Type((basic_types & 0xF0) >> 4)
+        pack.ua_type = BasicID_UA_Type(basic_types & 0x0F)
+        pack.uas_id = str(data[1:], "ascii").strip("\0")
         return pack
 
     def _pack(self):

@@ -33,11 +33,11 @@ class Message(ABC):
         if parsed_type != cls.rid:
             return None
 
-        rid_version = data[0] & 0x0F  # RID version (does anyone use that?)
-        if rid_version != RID_VERSION:
-            logger.warning(
-                f"RID version {rid_version} arrived! We support only version {RID_VERSION}"
-            )
+        # rid_version = data[0] & 0x0F  # RID version (does anyone use that?)
+        # if rid_version != RID_VERSION:
+        #     logger.warning(
+        #         f"RID version {rid_version} arrived! We support only version {RID_VERSION}"
+        #     )
 
         return cls._parse(data[1:])
 
