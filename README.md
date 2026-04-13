@@ -4,17 +4,14 @@ Library for encoding and decoding Open Drone ID messages, as the format is defin
 
 ## Installation
 ```sh
-pip install firmware-pyodid
+pip install git+https://github.com/dronetag/python-odid
 ```
 
 ## Usage
 
 ```python
-import dtpyodid
-import json
+import dtpyodid.parser as dtparser
 
-message = dtpyodid.parse(data)
-print(json.dumps(message))
+message = dtparser.parse(data)
+print(message)
 ```
-
-## Development
