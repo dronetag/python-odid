@@ -1,6 +1,6 @@
 import enum
 from dataclasses import dataclass
-from typing import ClassVar
+from typing import ClassVar, Self
 
 from dtpyodid.message import MAX_ID_BYTE_SIZE, Message
 
@@ -41,13 +41,16 @@ class BasicID(Message):
     uas_id: str = ""
 
     @classmethod
-    def _parse(cls, data: bytes) -> "BasicID":
+    def _parse(cls, data: bytes) -> Self:
         basic_types = data[0]
-        pack = cls()
-        pack.id_type = BasicID_ID_Type((basic_types & 0xF0) >> 4)
-        pack.ua_type = BasicID_UA_Type(basic_types & 0x0F)
-        pack.uas_id = str(data[1:], "ascii").strip("\0")
-        return pack
+        id_type = (basic_types & 0xF0) >> 4,
+        ua_type = basic_types & 0x0F,
+        uas_id = data[1:].decode("ascii", errors="replace").strip("\0")
+        return cls(
+            id_type=id_type,
+            ua_type=ua_type,
+            uas_id=uas_id,
+        )
 
     def _pack(self):
         id_type_nibble = (self.id_type << 4) & 0xF0
@@ -58,7 +61,3 @@ class BasicID(Message):
         uas_id += b"\0" * (MAX_ID_BYTE_SIZE - len(uas_id))
 
         return basic_types + uas_id + (b"\0" * 3)
-
-    # def __repr__(self) -> str:
-    #     return f'RemoteID_BasicID(id_type={self.id_type.name}, ' \
-    #            f'ua_type={self.ua_type.name}, uas_id="{self.uas_id}")'

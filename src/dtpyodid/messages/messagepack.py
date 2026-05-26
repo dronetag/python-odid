@@ -67,5 +67,5 @@ class MessagePack(Message):
         for message in messages:
             msg_size = buffer.write(message)
             if msg_size < MAX_MESSAGE_SIZE:
-                buffer.write(b"\0" * MAX_MESSAGE_SIZE - msg_size)
+                buffer.write(b"\0" * (MAX_MESSAGE_SIZE - msg_size))
         return buffer.getvalue()

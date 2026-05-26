@@ -6,6 +6,7 @@ from .messages.messagepack import MessagePack
 from .messages.operatorid import OperatorID
 from .messages.selfid import SelfID
 from .messages.system import System
+from .parser import parse
 
 __all__ = [
     "Message",
@@ -16,4 +17,5 @@ __all__ = [
     "Location",
     "MessagePack",
     "OperatorID",
+    "parse",
 ]

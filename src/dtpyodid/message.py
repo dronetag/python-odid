@@ -1,7 +1,7 @@
 import logging
 import struct
 from abc import ABC
-from typing import ClassVar, Optional
+from typing import ClassVar, Optional, Self
 
 LAT_LONG_MULTIPLIER = 1e-7
 SPEED_VERTICAL_MULTIPLIER = 0.5
@@ -27,7 +27,7 @@ class Message(ABC):
     rid: ClassVar[int]
 
     @classmethod
-    def parse(cls, data: bytes) -> Optional["Message"]:
+    def parse(cls, data: bytes) -> Optional[Self]:
         # sanity check that the message type (half)byte agrees with `self.rid`
         parsed_type = (data[0] & 0xF0) >> 4
         if parsed_type != cls.rid:
@@ -41,7 +41,7 @@ class Message(ABC):
 
         return cls._parse(data[1:])
 
-    def _parse(self, data: bytes) -> "Message":
+    def _parse(self, data: bytes) -> Self:
         """Parse bytes into message fields and returns any remaining (unused) bytes"""
         raise NotImplementedError()
 
