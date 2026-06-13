@@ -60,7 +60,7 @@ class Auth(Message):
                 pack.auth_length = 0
                 pack.auth_timestamp = 0
             else:
-                pack.auth_length = len
+                pack.auth_length = length
         else:
             offset = (
                 MAX_AUTH_PAGE_ZERO_SIZE
@@ -73,7 +73,7 @@ class Auth(Message):
             for i in range(offset, offset + amount):
                 pack.auth_data[i] = data[cnt]
                 cnt += 1
-            pack.auth_data_str = binascii.hexlify(pack.auth_data)
+            pack.auth_data_str = binascii.hexlify(bytes(pack.auth_data))
         return pack
 
     def _pack(self):

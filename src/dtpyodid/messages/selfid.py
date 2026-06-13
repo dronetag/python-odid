@@ -19,7 +19,7 @@ class SelfID(Message):
     desc: str
     desc_type: int = Type.INVALID
 
-    @classmethod
+    @staticmethod
     def _parse(data: bytes) -> "SelfID":
         return SelfID(
             desc_type=Type(data[0]),

@@ -4,7 +4,7 @@ Library for encoding and decoding Open Drone ID messages, as the format is defin
 
 ## Installation
 ```sh
-pip install git+https://github.com/dronetag/python-odid
+pip install git+https://github.com/dronetag/python-odid@dronetag
 ```
 
 ## Usage
